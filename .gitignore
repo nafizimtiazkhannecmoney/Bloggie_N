@@ -1,0 +1,16 @@
+**/.vs/
+**/bin/
+**/obj/
+**/*.user
+**/*.suo
+**/Logs/*
+**/*.log
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/appsettings.Staging.json
+**/appsettings.Production.json
+**/node_modules/
+**/.vscode/
+**/TestResults/
+**/*.db
+**/Migrations/*Snapshot.cs
