@@ -1,0 +1,61 @@
+﻿@model List<Bloggie.Web.Models.Domain.BlogPost>
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container col-xxl-8 px-4 py-5">
+    <div class="row align-items-center g-5 py-5">
+        <div class="col-12 col-lg-6">
+            <h1 class="display-5 fw-bold lh-1 mb-3">
+                Bloggie - The Dev Blog
+            </h1>
+            <p class="lead">
+                Bloggie Is The Home to Coding Blogs Covering a vast Range of Topics Like HTML, CSS, JavaScript, ASP.NET, C# etc.
+                Want to Read The Latest dev Articles? Join the Bloggie App and get Weekly Blogs in your Email.
+            </p>
+        </div>
+        <div class="col-12 col-lg-6">  
+            <img src="https://images.pexels.com/photos/3584998/pexels-photo-3584998.jpeg?auto=compress&cs=tinysrgb&w=600"  
+            alt="Bloggie Dev Blog" class="d-block mx-lg-auto img-fluid" width="300"  />
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-6">
+            @if(Model != null && Model.Any())
+            {
+                foreach (var blogPost in Model)
+                {
+                    <div class="mb-5 bg-light box-shadow p-3">
+                        <img src="@blogPost.FeaturedImageUrl" alt="@blogPost.Heading" class="mb-2 d-block img-fluid" />
+                        <h2 class="mb-4">@blogPost.Heading</h2>
+                        <p class="mb-4">
+                            Author: @blogPost.Author
+                            <br />
+                            Published Date: @blogPost.PublishedDate.ToShortDateString()
+                        </p>
+
+                        <p class="mb-4">
+                            @foreach (var tag in blogPost.Tags)
+                            {
+                                <span class="badge bg-danger me-1">@tag.Name</span>
+                            }
+                        </p>
+
+                        <p class="mb-4">
+                            @blogPost.ShortDescription
+                        </p>
+                        <a class="btn btn-dark" asp-area="" asp-controller="Blogs" asp-action="Index" asp-route-urlHandle="@blogPost.UrlHandle">Read More</a>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+
+
+
+
