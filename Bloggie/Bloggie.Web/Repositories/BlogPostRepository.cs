@@ -22,7 +22,7 @@ namespace Bloggie.Web.Repositories
         public async Task<BlogPost?> DeleteAsync(Guid id)
         {
             var existingBlogPost = await _dbContext.BlogPosts.FindAsync(id);
-            if(existingBlogPost != null)
+            if (existingBlogPost != null)
             {
                 _dbContext.Remove(existingBlogPost);
                 await _dbContext.SaveChangesAsync();
@@ -41,6 +41,11 @@ namespace Bloggie.Web.Repositories
         public async Task<BlogPost?> GetAsync(Guid id)
         {
             return await _dbContext.BlogPosts.Include(x => x.Tags).FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<BlogPost?> GetByUrlHandleAsync(string urlHandle)
+        {
+            return await _dbContext.BlogPosts.Include(x => x.Tags).FirstOrDefaultAsync(x => x.UrlHandle == urlHandle);
         }
 
         public async Task<BlogPost?> UpdateAsync(BlogPost blogPost)
