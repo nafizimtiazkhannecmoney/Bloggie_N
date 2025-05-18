@@ -16,7 +16,14 @@ Progression Status
 48 - Add Image Upload To Froala WYSIWYG Editor
 51 - Displaying Blogs and Hero Section
 52 - Display Single Blog Post and Blog Details
-53 - 
+53 - Done
+54 - Running
+55 
+56
+57
+58
+59
+60
 =====================================================
 
 ======================================================
