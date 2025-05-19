@@ -4,9 +4,58 @@
 	User
 
 *** We will Seed The intitial data of Roles and the Super Admin Information Using EF Core
-*** Possible Fixes
+
+
+================================================================================================
+                                    Extra
+                             *** Possible Fixes ***
 public BloggieDbContext(DbContextOptions<BloggieDbContext> options) : base(options)
 public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options)
+
+
+    public class LoginViewModel
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string? ReturnUrl { get; set; }
+    }
+
+
+
+***Logout dosent have any view Page
+        // To Block Single Action Page
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public IActionResult Add()
+
+        // To Block Entire Controller
+        [Authorize(Roles = "Admin")]
+        public class AdminBlogPostsController : Controller
+
+*** Make an AccessDenied Page with IActionResult
+
+*** If The User Can see the Menu or Option Or not.
+----------------------------------------------------------------------------------------------------------------------
+@if (signInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Admin
+        </a>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" asp-area="" asp-controller="AdminTags" asp-action="Add">Add Tag</a></li>
+            <li><a class="dropdown-item" asp-area="" asp-controller="AdminTags" asp-action="List">Show All Tags</a></li>
+            <li><a class="dropdown-item" asp-area="" asp-controller="AdminBlogPosts" asp-action="Add">Add BlogPost</a></li>
+            <li><a class="dropdown-item" asp-area="" asp-controller="AdminBlogPosts" asp-action="List">Show All BlogPost</a></li>
+        </ul>
+    </li>
+}
+----------------------------------------------------------------------------------------------------------------------
+
+
+================================================================================================
+
+
 
 ================================================================================================
 	START
@@ -273,9 +322,13 @@ namespace Bloggie.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login() 
+        public IActionResult Login(string ReturnUrl) 
         {
-            return View();
+            var model = new LoginViewModel
+            {
+                ReturnUrl = ReturnUrl
+            };
+            return View(model);
         }
 
         [HttpPost]
@@ -284,6 +337,10 @@ namespace Bloggie.Web.Controllers
             var signInResult = await signInManager.PasswordSignInAsync(loginViewModel.Username, loginViewModel.Password, false, false);
             if (signInResult != null && signInResult.Succeeded)
             {
+                if (!string.IsNullOrWhiteSpace(loginViewModel.ReturnUrl))
+                {
+                    return Redirect(loginViewModel.ReturnUrl);
+                }
                 return RedirectToAction("Index", "Home");
             }
 
@@ -296,6 +353,14 @@ namespace Bloggie.Web.Controllers
         {
             await signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult AccessDenied(string returnUrl = null)
+        {
+            // You can log or pass the returnUrl if you want
+            ViewData["ReturnUrl"] = returnUrl;
+            return View(); // Looks for Views/Account/AccessDenied.cshtml
         }
     }
 }
@@ -351,6 +416,7 @@ Register.cshtml
 Login.cshtml
 ================================================================================================
 {
+
 @model Bloggie.Web.Models.ViewModels.LoginViewModel
 
 <div class="container mx-auto">
@@ -375,11 +441,14 @@ Login.cshtml
                 <div class="mb-3">
                     <button type="submit" class="btn btn-dark">Login</button>
                 </div>
+
+                <input type="hidden" asp-for="ReturnUrl"/>
             </form>
 
         </div>
     </div>
 </div>
+
 }
 ================================================================================================
 
@@ -412,4 +481,3 @@ Inject this at the Top
 ================================================================================================
 
 
-Logout dosent have any view Page
