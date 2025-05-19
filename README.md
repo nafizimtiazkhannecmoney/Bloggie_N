@@ -17,13 +17,14 @@ Progression Status
 51 - Displaying Blogs and Hero Section
 52 - Display Single Blog Post and Blog Details
 53 - Done
-54 - Running
+54 - Done
 55 
 56
 57
 58
 59
 60
+61 - Running
 =====================================================
 
 ======================================================

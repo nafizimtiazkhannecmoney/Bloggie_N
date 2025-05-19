@@ -1,0 +1,415 @@
+
+	Super Admin
+	Admin
+	User
+
+*** We will Seed The intitial data of Roles and the Super Admin Information Using EF Core
+*** Possible Fixes
+public BloggieDbContext(DbContextOptions<BloggieDbContext> options) : base(options)
+public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options)
+
+================================================================================================
+	START
+1. Install Nugets
+Microsoft.AspNetCore.Identity.EntityFrameworkCore
+================================================================================================
+
+
+2. Create AuthDbContext.cs
+================================================================================================
+AuthDbContext.cs (Inherit From IdentityDbContext)
+================================================================================================
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
+namespace Bloggie.Web.Data
+{
+    public class AuthDbContext : IdentityDbContext
+    {
+        public AuthDbContext(DbContextOptions options) : base(options)
+        {
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            // Seed Roles (User, Admin, SuperAdmin)
+            var AdminRoleId = "b495005a-f010-44f8-8bb9-0fd3240ac8fb";
+            var SuperAdminRoleId = "f3d9a44e-0b74-4969-872d-b1c797615ea0";
+            var UserRoleId = "935053f7-a645-4869-a8d9-0f52fc521380";
+
+            var roles = new List<IdentityRole>
+            {
+                new IdentityRole
+                {
+                    Name = "Admin",
+                    NormalizedName = "Admin",
+                    Id = AdminRoleId,
+                    ConcurrencyStamp = AdminRoleId
+                },
+                new IdentityRole
+                {
+                    Name = "SuperAdmin",
+                    NormalizedName = "SuperAdmin",
+                    Id = SuperAdminRoleId,
+                    ConcurrencyStamp= SuperAdminRoleId
+                },
+                new IdentityRole
+                {
+                    Name = "User",
+                    NormalizedName = "User",
+                    Id = UserRoleId,
+                    ConcurrencyStamp = UserRoleId
+                }
+                    
+            };
+
+            builder.Entity<IdentityRole>().HasData(roles);
+
+            // Seed SuperAdminUser
+            var superAdminId = "e67ecf8e-b5d3-4317-b3ea-ce8c7279e91f";
+
+            var superAdminUser = new IdentityUser
+            {
+                UserName = "superadmin@bloggie.com",
+                Email = "superadmin@bloggie.com",
+                NormalizedEmail = "superadmin@bloggie.com",
+                NormalizedUserName = "superadmin@bloggie.com",
+                Id = superAdminId
+            };
+
+            superAdminUser.PasswordHash = new PasswordHasher<IdentityUser>().HashPassword(superAdminUser, "Superadmin@123");
+
+            builder.Entity<IdentityUser>().HasData(superAdminUser);
+
+            // Add All Roles To SuperAdminUser
+            var superAdminRoles = new List<IdentityUserRole<string>>
+            {
+                new IdentityUserRole<string>
+                {
+                    RoleId = AdminRoleId,
+                    UserId = superAdminId,
+                },
+                new IdentityUserRole<string>
+                {
+                    RoleId = SuperAdminRoleId,
+                    UserId = superAdminId,
+                },
+                new IdentityUserRole<string>
+                {
+                    RoleId = UserRoleId,
+                    UserId = superAdminId,
+                }
+            };
+
+            builder.Entity<IdentityUserRole<string>>().HasData(superAdminRoles);
+        }
+    }
+}
+
+================================================================================================
+
+
+3. Now We Make a connectionString For AuthDbContext
+================================================================================================
+appsettings.json
+================================================================================================
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+    "AllowedHosts": "*",
+    "ConnectionStrings": {
+        "BloggieDbConnectionString": "Server=DESKTOP-63UE644\\SQLEXPRESS;Database=BloggieDb;Trusted_Connection=True;TrustServerCertificate=Yes",
+        "BloggieAuthDbConnectionString": "Server=DESKTOP-63UE644\\SQLEXPRESS;Database=BloggieAuthDb;Trusted_Connection=True;TrustServerCertificate=Yes"
+    },
+    "Cloudinary": {
+        "CloudName": "dlgmzq5e6",
+        "ApiKey": "961783432477875",
+        "ApiSecret": "78UKeZxca1ttQToQomqzChKhZ0I"
+    }
+}
+================================================================================================
+
+
+4. Inject AuthDbContext to Program.cs
+================================================================================================
+Program.cs
+================================================================================================
+{
+	using Bloggie.Web.Data;
+using Bloggie.Web.Repositories;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+
+// Adding the DbContext to the services collection
+builder.Services.AddDbContext<BloggieDbContext>(options =>
+options.UseSqlServer(builder.Configuration.GetConnectionString("BloggieDbConnectionString")));
+
+builder.Services.AddDbContext<AuthDbContext>(options =>
+options.UseSqlServer(builder.Configuration.GetConnectionString("BloggieAuthDbConnectionString")));
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<AuthDbContext>();
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    // Default Settings
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 5;
+    options.Password.RequiredUniqueChars = 1;
+});
+
+
+builder.Services.AddScoped<ITagRepository, TagRepository>();                    // Registering the TagRepository with the DI container
+builder.Services.AddScoped<IBlogPostRepository, BlogPostRepository>();         //  Registering the BlogPostRepository with the DI container
+builder.Services.AddScoped<IImageRepository, CloudinaryImageRepository>();    //   Registering the CloudinaryImageRepository with the DI container 
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.Run();
+
+}
+================================================================================================
+
+
+5. Run EntityFrameworkCore Migration and Database Update
+================================================================================================
+Package Manager Console
+================================================================================================
+PM> Add-Migration "Creating Auth Db" -Context "AuthDbContext"
+PM> dotnet tool update --global dotnet-ef   | If You Need To Update
+PM> Update-Database -Context "AuthDbContext"
+================================================================================================
+
+
+6. Make AccountController "Make Register Page"
+================================================================================================
+AccountController.cs
+================================================================================================
+{
+
+using Bloggie.Web.Models.ViewModels;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Bloggie.Web.Controllers
+{
+    public class AccountController : Controller
+    {
+        private readonly UserManager<IdentityUser> userManager;
+        private readonly SignInManager<IdentityUser> signInManager;
+
+        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        {
+            this.userManager = userManager;
+            this.signInManager = signInManager;
+        }
+
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterViewModel registerViewModel)
+        {
+            var identityUser = new IdentityUser
+            {
+                UserName = registerViewModel.Username,
+                Email = registerViewModel.Email,
+            };
+
+            var identityResult = await userManager.CreateAsync(identityUser, registerViewModel.Password);
+
+            if (identityResult.Succeeded)
+            {
+                // Assign this user a User Role
+                var roleIdentityResult = await userManager.AddToRoleAsync(identityUser, "User");
+
+                if (roleIdentityResult.Succeeded)
+                {
+                    // Show Success Notification
+                    return RedirectToAction("Register");
+                }
+            }
+
+            // Show error Notification
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult Login() 
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Login(LoginViewModel loginViewModel)
+        {
+            var signInResult = await signInManager.PasswordSignInAsync(loginViewModel.Username, loginViewModel.Password, false, false);
+            if (signInResult != null && signInResult.Succeeded)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Show Errors
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Logout()
+        {
+            await signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
+        }
+    }
+}
+
+
+} 
+================================================================================================
+
+================================================================================================
+Register.cshtml
+================================================================================================
+{
+
+@model Bloggie.Web.Models.ViewModels.RegisterViewModel
+
+<div class="container mx-auto">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-6">
+
+            <h1 class="mt-3 mb-3 h3">
+                Register
+            </h1>
+
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="username" class="form-control" asp-for="Username" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="email" class="form-control" asp-for="Email"/>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="password" class="form-control" asp-for="Password"/>
+                </div>
+
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-dark">Register</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+}
+================================================================================================
+
+================================================================================================
+Login.cshtml
+================================================================================================
+{
+@model Bloggie.Web.Models.ViewModels.LoginViewModel
+
+<div class="container mx-auto">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-6">
+
+            <h1 class="mt-3 mb-3 h3">
+                Login
+            </h1>
+
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="username" class="form-control" asp-for="Username" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="password" class="form-control" asp-for="Password" />
+                </div>
+
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-dark">Login</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+}
+================================================================================================
+
+
+================================================================================================
+_Layout.cshtml
+================================================================================================
+{
+Inject this at the Top
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> signInManager
+
+
+<div class="d-flex align-items-center">
+    @if (signInManager.IsSignedIn(User))
+    {
+        <div class="me-3 text-light">
+            @User?.Identity?.Name
+        </div>
+        <a class="btn me-3 bg-light text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Logout</a>
+    }
+    else
+    {
+        <a class="btn me-3 bg-light text-dark" asp-area="" asp-controller="Account" asp-action="Register">Register</a>
+        <a class="btn me-3 bg-light text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+    }
+
+</div>
+}
+================================================================================================
+
+
+Logout dosent have any view Page
