@@ -461,6 +461,22 @@ Inject this at the Top
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> signInManager
 
+ @if (signInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+ {
+     <li class="nav-item dropdown">
+         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+             Admin
+         </a>
+         <ul class="dropdown-menu">
+             <li><a class="dropdown-item" asp-area="" asp-controller="AdminTags" asp-action="Add">Add Tag</a></li>
+             <li><a class="dropdown-item" asp-area="" asp-controller="AdminTags" asp-action="List">Show All Tags</a></li>
+             <li><a class="dropdown-item" asp-area="" asp-controller="AdminBlogPosts" asp-action="Add">Add BlogPost</a></li>
+             <li><a class="dropdown-item" asp-area="" asp-controller="AdminBlogPosts" asp-action="List">Show All BlogPost</a></li>
+             <li><a class="dropdown-item" asp-area="" asp-controller="AdminUsers" asp-action="List">Show All Users</a></li>
+         </ul>
+     </li>
+ }
+
 
 <div class="d-flex align-items-center">
     @if (signInManager.IsSignedIn(User))
@@ -481,3 +497,184 @@ Inject this at the Top
 ================================================================================================
 
 
+**** User Management********************************************************************************************************************************************************************************
+
+
+* Make AdminUsersController.cs
+================================================================================================
+AdminUsersController
+================================================================================================
+{
+using Bloggie.Web.Models.ViewModels;
+using Bloggie.Web.Repositories;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Bloggie.Web.Controllers
+{
+    [Authorize(Roles = "Admin")]
+    public class AdminUsersController : Controller
+    {
+        private readonly IUserRepository _userRepository;
+
+        public AdminUsersController(IUserRepository userRepository)
+        {
+            this._userRepository = userRepository;
+        }
+        [HttpGet]
+        public async Task<IActionResult> List()
+        {
+            var users = await _userRepository.GetAll();  // We could send the domain object
+
+            var usersViewModel = new UserViewModel();
+            usersViewModel.Users = new List<User>();
+            foreach (var user in users) 
+            {
+                usersViewModel.Users.Add(new Models.ViewModels.User
+                {
+                    Id = Guid.Parse(user.Id),
+                    Username = user.UserName,
+                    EmailAddress = user.Email
+                });
+            }
+            return View(usersViewModel);
+        }
+    }
+}
+
+
+}
+================================================================================================
+
+
+================================================================================================
+IUserRepository
+================================================================================================
+using Microsoft.AspNetCore.Identity;
+
+namespace Bloggie.Web.Repositories
+{
+    public interface IUserRepository
+    {
+        Task<IEnumerable<IdentityUser>> GetAll();
+    }
+}
+================================================================================================
+
+================================================================================================
+UserRepository.cs
+================================================================================================
+{
+using Bloggie.Web.Data;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
+namespace Bloggie.Web.Repositories
+{
+    public class UserRepository : IUserRepository
+    {
+        private readonly AuthDbContext _authDbContext;
+
+        public UserRepository(AuthDbContext authDbContext)
+        {
+            this._authDbContext = authDbContext;
+        }
+        public async Task<IEnumerable<IdentityUser>> GetAll()
+        {
+            var users = await _authDbContext.Users.ToListAsync();
+
+            var superAdminUser = await _authDbContext.Users.FirstOrDefaultAsync(x => x.Email == "superadmin@bloggie.com");
+
+            if (superAdminUser is not null) 
+            {
+                users.Remove(superAdminUser);
+            }
+
+            return users;
+        }
+    }
+}
+
+}
+================================================================================================
+
+
+
+* Inject The Repository in Program.cs
+================================================================================================
+Program.cs
+================================================================================================
+builder.Services.AddScoped<IUserRepository, UserRepository>();       
+================================================================================================
+
+================================================================================================
+AdminUsersController List View  List.cshtm
+================================================================================================
+{
+@model Bloggie.Web.Models.ViewModels.UserViewModel
+
+<div class="bg-secondary bg-opacity-10 py-2">
+    <div class="container">
+        <h1>Users - Admin Functionality</h1>
+    </div>
+</div>
+
+<div>
+    <div class="container">
+        <div class="mb-3 justify-content-end d-flex">
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalCreateUser">
+                Create User
+            </button>
+        </div>
+
+        
+        @if (Model.Users is not null || Model.Users.Any())
+        {
+            <table class="table py-5">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model.Users)
+                    {
+                        <tr>
+                            <td>@user.Id</td>
+                            <td>@user.Username</td>
+                            <td>@user.EmailAddress</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No Users Found</p>
+        }
+        
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalCreateUser" tabindex="-1" aria-labelledby="modalCreateUserLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCreateUserLabel">Create New User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+================================================================================================
