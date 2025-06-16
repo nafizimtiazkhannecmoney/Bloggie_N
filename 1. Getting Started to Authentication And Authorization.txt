@@ -607,74 +607,118 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 ================================================================================================
 
 ================================================================================================
-AdminUsersController List View  List.cshtm
+AdminUsersController|HTML| List View  List.cshtm
 ================================================================================================
 {
-@model Bloggie.Web.Models.ViewModels.UserViewModel
+    @model Bloggie.Web.Models.ViewModels.UserViewModel
 
-<div class="bg-secondary bg-opacity-10 py-2">
-    <div class="container">
-        <h1>Users - Admin Functionality</h1>
-    </div>
-</div>
-
-<div>
-    <div class="container">
-        <div class="mb-3 justify-content-end d-flex">
-            <!-- Button trigger modal -->
-            <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalCreateUser">
-                Create User
-            </button>
+    <div class="bg-secondary bg-opacity-10 py-2">
+        <div class="container">
+            <h1>Users - Admin Functionality</h1>
         </div>
+    </div>
 
-        
-        @if (Model.Users is not null || Model.Users.Any())
-        {
-            <table class="table py-5">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var user in Model.Users)
-                    {
+    <div>
+        <div class="container">
+            <div class="mb-3 justify-content-end d-flex">
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalCreateUser">
+                    Create User
+                </button>
+            </div>
+
+            
+            @if (Model.Users is not null || Model.Users.Any())
+            {
+                <table class="table py-5">
+                    <thead>
                         <tr>
-                            <td>@user.Id</td>
-                            <td>@user.Username</td>
-                            <td>@user.EmailAddress</td>
+                            <th>Id</th>
+                            <th>Username</th>
+                            <th>Email</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        }
-        else
-        {
-            <p>No Users Found</p>
-        }
-        
-    </div>
-</div>
-
-<!-- Modal -->
-<div class="modal fade" id="modalCreateUser" tabindex="-1" aria-labelledby="modalCreateUserLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalCreateUserLabel">Create New User</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                ...
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
-            </div>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.Users)
+                        {
+                            <tr>
+                                <td>@user.Id</td>
+                                <td>@user.Username</td>
+                                <td>@user.EmailAddress</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No Users Found</p>
+            }
+            
         </div>
     </div>
-</div>
+
+    <!-- Modal -->
+    <form method="post">
+        <div class="modal fade" id="modalCreateUser" tabindex="-1" aria-labelledby="modalCreateUserLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalCreateUserLabel">Create New User</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" asp-for="Username"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email Address</label>
+                            <input type="text" class="form-control" asp-for="Email"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" asp-for="Password"/>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" id="chkUserRole" class="form-check-input" value="User" checked disabled/>
+                                <label class="form-check-label" for="chkUserRole">User Role</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="chkAdminRole" class="form-check-input"  asp-for="AdminRoleChckBox" />
+                                <label class="form-check-label" for="chkAdminRole">Admin Role</label>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
 }
+================================================================================================
+
+
+
+================================================================================================
+UserViewModel
+================================================================================================
+namespace Bloggie.Web.Models.ViewModels
+{
+    public class UserViewModel
+    {
+        public List<User> Users { get; set; }
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public bool AdminRoleChckBox { get; set; }
+    }
+}
+
 ================================================================================================
