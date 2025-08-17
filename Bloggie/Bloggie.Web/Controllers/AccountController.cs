@@ -40,7 +40,8 @@ namespace Bloggie.Web.Controllers
                 if (roleIdentityResult.Succeeded)
                 {
                     // Show Success Notification
-                    return RedirectToAction("Register");
+                    //return RedirectToAction("Register");
+                    return RedirectToAction("Login ");
                 }
             }
 

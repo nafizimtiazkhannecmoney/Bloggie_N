@@ -25,8 +25,8 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
-    options.Password.RequiredLength = 5;
-    options.Password.RequiredUniqueChars = 1;
+    options.Password.RequiredLength = 3;
+    options.Password.RequiredUniqueChars = 0;
 });
 
 
@@ -34,6 +34,8 @@ builder.Services.AddScoped<ITagRepository, TagRepository>();                    
 builder.Services.AddScoped<IBlogPostRepository, BlogPostRepository>();         //  Registering the BlogPostRepository with the DI container
 builder.Services.AddScoped<IImageRepository, CloudinaryImageRepository>();    //   Registering the CloudinaryImageRepository with the DI container 
 builder.Services.AddScoped<IUserRepository, UserRepository>();                // 
+builder.Services.AddScoped<IBlogPostLikeRepository, BlogPostLikeRepository>();  //
+
 
 var app = builder.Build();
 
@@ -58,3 +60,9 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+
+// Add-Migration "Adding Like Functionality" -Context "BloggieDbContext"
+// Update-Database -Context "BloggieDbContext"
+// Update-Database -Context "BloggieDbContext" "20250806101700_Adding Like Functionality"                  *** Previous Migration
+// Remove-Migration -Context "BloggieDbContext" -Force   ** Try not to use force unless you are sure you want to remove the migration

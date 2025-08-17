@@ -1,3 +1,5 @@
+Updated one which has user info tab but not like function
+
 # Bloggie
 Web MVC Project Form Udemy By Sameer Saini
 26 -2
@@ -26,10 +28,12 @@ Progression Status
 60
 61 - Running
 62
-63 - Return Url
+63 - Return Url ---
 72 - Manage User
 73
 74 - 5: 13, 20:01
+
+68- delete the contents of blogpostlike table
 
 =====================================================
 

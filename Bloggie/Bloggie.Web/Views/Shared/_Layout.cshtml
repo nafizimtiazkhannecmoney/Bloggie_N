@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Bloggie.Web.styles.css" asp-append-version="true" />
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
 
 
@@ -58,7 +58,7 @@
                         @if (signInManager.IsSignedIn(User))
                         {
                             <div class="me-3 text-light">
-                                @User?.Identity?.Name
+                                <b>@User?.Identity?.Name </b>
                             </div>
                             <a class="btn me-3 bg-light text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Logout</a>
                         }
