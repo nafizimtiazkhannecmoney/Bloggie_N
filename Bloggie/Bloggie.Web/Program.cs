@@ -33,8 +33,9 @@ builder.Services.Configure<IdentityOptions>(options =>
 builder.Services.AddScoped<ITagRepository, TagRepository>();                    // Registering the TagRepository with the DI container
 builder.Services.AddScoped<IBlogPostRepository, BlogPostRepository>();         //  Registering the BlogPostRepository with the DI container
 builder.Services.AddScoped<IImageRepository, CloudinaryImageRepository>();    //   Registering the CloudinaryImageRepository with the DI container 
-builder.Services.AddScoped<IUserRepository, UserRepository>();                // 
-builder.Services.AddScoped<IBlogPostLikeRepository, BlogPostLikeRepository>();  //
+builder.Services.AddScoped<IUserRepository, UserRepository>();                 
+builder.Services.AddScoped<IBlogPostLikeRepository, BlogPostLikeRepository>();
+builder.Services.AddScoped<IBlogPostCommentRepository, BolgPostCommentRepository>();
 
 
 var app = builder.Build();
@@ -66,3 +67,11 @@ app.Run();
 // Update-Database -Context "BloggieDbContext"
 // Update-Database -Context "BloggieDbContext" "20250806101700_Adding Like Functionality"                  *** Previous Migration
 // Remove-Migration -Context "BloggieDbContext" -Force   ** Try not to use force unless you are sure you want to remove the migration
+
+
+// Add-Migration "Adding Comments" -Context "BloggieDbContext"
+// Update-Database -Context "BloggieDbContext"
+
+
+
+//   Delete  FROM [BloggieDb].[dbo].[BlogPostLike]

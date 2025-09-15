@@ -11,7 +11,7 @@ namespace Bloggie.Web.Controllers
     public class AdminBlogPostsController : Controller
     {
         private readonly ITagRepository _tagRepository;
-        private readonly IBlogPostRepository _blogPostRepository;
+        private readonly IBlogPostRepository _blogPostRepository; 
 
         public AdminBlogPostsController(ITagRepository tagRepository, IBlogPostRepository blogPostRepository)
         {

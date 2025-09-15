@@ -66,7 +66,7 @@ Microsoft.AspNetCore.Identity.EntityFrameworkCore
 
 2. Create AuthDbContext.cs
 ================================================================================================
-AuthDbContext.cs (Inherit From IdentityDbContext)
+AuthDbContext.cs (Inherit From IdentityDbContext, Seeds 3 Roles and The SuperAdmin and assigns all the roles to the Superadmin)
 ================================================================================================
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -186,7 +186,7 @@ appsettings.json
 ================================================================================================
 
 
-4. Inject AuthDbContext to Program.cs
+4. Inject AuthDbContext to Program.cs, and Configure Password Settings
 ================================================================================================
 Program.cs
 ================================================================================================
@@ -454,7 +454,7 @@ Login.cshtml
 
 
 ================================================================================================
-_Layout.cshtml
+_Layout.cshtml  (Only Admin Can See The User Management Tab)
 ================================================================================================
 {
 Inject this at the Top
@@ -500,7 +500,7 @@ Inject this at the Top
 **** User Management********************************************************************************************************************************************************************************
 
 
-* Make AdminUsersController.cs
+* Make AdminUsersController.cs 
 ================================================================================================
 AdminUsersController
 ================================================================================================
@@ -538,10 +538,52 @@ namespace Bloggie.Web.Controllers
             }
             return View(usersViewModel);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> List(UserViewModel userViewModel)
+        {
+            var identityUser = new IdentityUser
+            {
+                UserName = userViewModel.Username,
+                Email = userViewModel.Email,
+            };
+
+            var identitiResult = await _userManager.CreateAsync(identityUser, userViewModel.Password);
+
+            if (identitiResult is not null)
+            {
+                if (identitiResult.Succeeded)
+                {
+                    // Asign Roles to this User
+                    var roles = new List<string> { "User" };
+                    if (userViewModel.AdminRoleChckBox)
+                    {
+                        roles.Add("Admin");
+                    }
+
+                    await _userManager.AddToRolesAsync(identityUser, roles);
+                }
+            }
+
+            return RedirectToAction("List");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var userToBeDeleted = await _userManager.FindByIdAsync(id);
+            if (userToBeDeleted is not null)
+            {
+                var result = await _userManager.DeleteAsync(userToBeDeleted);
+                if (result is not null && result.Succeeded)
+                {
+                    return RedirectToAction("List", "AdminUsers");
+                }
+            }
+            return View("List");
+        }
     }
 }
-
-
 }
 ================================================================================================
 
@@ -582,7 +624,7 @@ namespace Bloggie.Web.Repositories
         {
             var users = await _authDbContext.Users.ToListAsync();
 
-            var superAdminUser = await _authDbContext.Users.FirstOrDefaultAsync(x => x.Email == "superadmin@bloggie.com");
+            var superAdminUser = await _authDbContext.Users.FirstOrDefaultAsync(x => x.Email == "superadmin@bloggie.com"); 
 
             if (superAdminUser is not null) 
             {
@@ -722,3 +764,46 @@ namespace Bloggie.Web.Models.ViewModels
 }
 
 ================================================================================================
+
+
+================================================================================================
+For only Super Admin Be Able to create Admin User
+================================================================================================
+<div class="mb-3">
+    <div class="form-check">
+        <input type="checkbox" id="chkUserRole" class="form-check-input" value="User" checked disabled/>
+        <label class="form-check-label" for="chkUserRole">User Role</label>
+    </div>
+
+    @if (User.IsInRole("SuperAdmin"))
+    {
+            <div class="form-check">
+                <input type="checkbox" id="chkAdminRole" class="form-check-input" asp-for="AdminRoleChckBox" />
+                <label class="form-check-label" for="chkAdminRole">Admin Role</label>
+            </div>
+    }
+</div>
+================================================================================================
+
+================================================================================================
+Delete Functionality | List.cshtml
+================================================================================================
+<tbody>
+    @foreach (var user in Model.Users)
+    {
+        <tr>
+            <td>@user.Id</td>
+            <td>@user.Username</td>
+            <td>@user.EmailAddress</td>
+            <td>
+                <form method="post" asp-controller="AdminUsers" asp-action="Delete" asp-route-id="@user.Id">
+                    <button class="btn btn-danger" type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+</tbody>
+================================================================================================
+
+
+

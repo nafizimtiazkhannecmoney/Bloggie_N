@@ -34,6 +34,13 @@ Progression Status
 74 - 5: 13, 20:01
 
 68- delete the contents of blogpostlike table
+69 - 2: 06 Minute BlogPostComment Table
+70 - 4:43 
+70 - 11: 24
+71 - Done
+73 - Done
+74 - 13:35
+75 - Delete Done
 
 =====================================================
 
@@ -44,7 +51,7 @@ Microsoft.EntityFrameworkCore.SqlServer
 Microsoft.EntityFrameworkCore.Tools
 ======================================================
 
-
+01901027236
 ws, find the api call
 
 ======================================================
@@ -60,3 +67,17 @@ Update-Database
 
 json 1 tab front
 response header no server
+
+
+Paste-anywhere “Quick Add”: listen for a URL in the global paste event; if it looks like a video, open the left panel prefilled.
+
+Undo toast for deletes/favorite toggles (5–10s “Undo” action) so mistakes are painless.
+
+Scroll progress bar at the very top (thin, subtle) so long pages feel oriented.
+
+Fuzzy search (title/description/tags) with lightweight scoring (Fuse-style) to forgive typos.
+
+Secondary tabs (no logic change): “All • Favorites • Queue • Recently Added”.
+
+
+

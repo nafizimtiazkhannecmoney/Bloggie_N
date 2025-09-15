@@ -36,31 +36,52 @@ namespace Bloggie.Web.Controllers
             return View(usersViewModel);
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> List(UserViewModel userViewModel)
-        //{
-        //    var identityUser = new IdentityUser
-        //    {
-        //        UserName = userViewModel.Username,
-        //        Email = userViewModel.Email,
-        //    };
+        [HttpPost]
+        public async Task<IActionResult> List(UserViewModel userViewModel)
+        {
+            var identityUser = new IdentityUser
+            {
+                UserName = userViewModel.Username,
+                Email = userViewModel.Email,
+            };
 
-        //    var identitiResult = await _userManager.CreateAsync(identityUser, userViewModel.Password);
+            var identitiResult = await _userManager.CreateAsync(identityUser, userViewModel.Password);
 
-        //    if (identitiResult is not null) 
-        //    {
-        //        if (identitiResult.Succeeded)
-        //        { 
-        //            // Asign Roles to this User
-        //            var roles = new List<string> { "User" };
-        //            if (userViewModel.AdminRoleChckBox)
-        //            {
-        //                roles.Add("Admin");
-        //            }
+            if (identitiResult is not null)
+            {
+                if (identitiResult.Succeeded)
+                {
+                    // Asign Roles to this User
+                    var roles = new List<string> { "User" };
+                    if (userViewModel.AdminRoleChckBox)
+                    {
+                        roles.Add("Admin");
+                    }
 
-        //            await _userManager.AddToRolesAsync(identityUser, roles);
-        //        }
-        //    }
-        //}
+                    identitiResult =  await _userManager.AddToRolesAsync(identityUser, roles);
+                    if (identitiResult is not null && identitiResult.Succeeded)
+                    {
+                        return RedirectToAction("List", "AdminUsers");
+
+                    }
+                }
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var userToBeDeleted = await _userManager.FindByIdAsync(id.ToString());
+            if (userToBeDeleted is not null)
+            {
+                var result = await _userManager.DeleteAsync(userToBeDeleted);
+                if (result is not null && result.Succeeded)
+                {
+                    return RedirectToAction("List", "AdminUsers");
+                }
+            }
+            return View("List");
+        }
     }
 }

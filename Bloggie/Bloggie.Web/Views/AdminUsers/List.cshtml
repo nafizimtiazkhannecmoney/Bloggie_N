@@ -24,6 +24,7 @@
                         <th>Id</th>
                         <th>Username</th>
                         <th>Email</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,6 +34,15 @@
                             <td>@user.Id</td>
                             <td>@user.Username</td>
                             <td>@user.EmailAddress</td>
+                            @* <td>
+                                 <a asp-controller="AdminUsers" asp-action="Edit" asp-route-id="@user.Id" class="btn btn-sm btn-primary">Edit</a>
+								<a asp-controller="AdminUsers" asp-action="Delete" asp-route-id="@user.Id" class="btn btn-sm btn-danger">Delete</a>
+                            </td> *@
+                            <td>
+                                <form method="post" asp-controller="AdminUsers" asp-action="Delete" asp-route-id="@user.Id">
+                                    <button class="btn btn-danger" type="submit">Delete</button>
+                                </form>
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -55,6 +65,8 @@
                 <h5 class="modal-title" id="modalCreateUserLabel">Create New User</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+
+            @* Body Of The Modal *@
             <div class="modal-body">
                 <div class="mb-3">
                     <label class="form-label">Username</label>
@@ -73,13 +85,18 @@
                         <input type="checkbox" id="chkUserRole" class="form-check-input" value="User" checked disabled/>
                         <label class="form-check-label" for="chkUserRole">User Role</label>
                     </div>
-                    <div class="form-check">
-                        <input type="checkbox" id="chkAdminRole" class="form-check-input" asp-for="AdminRoleChckBox" />
-                        <label class="form-check-label" for="chkAdminRole">Admin Role</label>
-                    </div>
+
+                    @if (User.IsInRole("SuperAdmin"))
+                    {
+                            <div class="form-check">
+                                <input type="checkbox" id="chkAdminRole" class="form-check-input" asp-for="AdminRoleChckBox" />
+                                <label class="form-check-label" for="chkAdminRole">Admin Role</label>
+                            </div>
+                    }
                 </div>
 
             </div>
+            @* Modal Footer *@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="submit" class="btn btn-primary">Save changes</button>
